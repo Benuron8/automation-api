@@ -11,5 +11,4 @@ BASE_URL = "https://api.themoviedb.org/3"
 def api_client():
     """Fixture to create and return an APIClient instance."""
     load_dotenv()  # Load environment variables once
-    print(os.getenv("API_TOKEN"))
     return APIClient(BASE_URL, os.getenv("API_TOKEN"))
