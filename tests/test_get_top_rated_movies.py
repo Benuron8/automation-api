@@ -1,29 +1,59 @@
-from src.api_client import APIClient
-from tests.conftest import BASE_URL  # Make sure you import APIClient correctly
+from src.api_utils import *
+from src.utils import *
+from tests.conftest import API_TOKEN
 
-def test_top_rated_movies(api_client):
-    params = {
-        'language': 'en-US',
-        'page': 1
-    }
+params = {
+    'language': 'en-US',
+    'page': 1
+}
 
-    # Send the request using the APIClient
-    response = api_client.get("movie/top_rated", params)
+def test_top_rated_movies_valid_api_key():
+    # Gets the response the GET request
+    response = api_get("movie/top_rated", params, API_TOKEN)
 
-    # Scenario 1: Successful response (Status code 200)
+    # validating response status code 
     assert response.status_code == 200
-    data = response.json()  # Call .json() to get the response body as a dictionary
-    assert isinstance(data, dict), "Response should be a dictionary"
-    assert isinstance(data['results'], list), "Results should be a list"
-    assert len(data['results']) > 0, "There should be at least one movie"
-    assert 'title' in data['results'][0], "The first movie should have a 'title' field"
-    assert 'vote_average' in data['results'][0], "The first movie should have a 'vote_average' field"
 
-    # Scenario 2: Unauthorized (Invalid API Key, Status code 401)
-    invalid_client = APIClient(BASE_URL, "invalid_api_key")
-    invalid_response = invalid_client.get("movie/top_rated", params)
+    data = response.json()
+    # verifying the response structure
+    verify_response_structure(data)
+
+    # verifying total movies being returned
+    expected_total_results = 10028
+    assert data["total_results"] == expected_total_results, f"Total results expected {expected_total_results}, got {data['total_results']}" 
+
+# Test for invalid API key (status code: 401)
+def test_top_rated_movies_invalid_api_key():
+    invalid_response = api_get("movie/top_rated", params, "invalid_api_key")
+
+    # validating response status code 
     assert invalid_response.status_code == 401
 
-    # Scenario 3: Invalid endpoint (Status code 404)
-    invalid_response = api_client.get("invalid/endpoint", params)
+    # expected values
+    expected_status_code = 7
+    expected_status_message = "Invalid API key: You must be granted a valid key."
+    expected_success = False
+
+    data = invalid_response.json()
+    verify_error_response(data, expected_status_code, expected_status_message, expected_success)
+
+    assert data["status_code"] == expected_status_code, f"Status code expected {expected_status_code}, got {data['status_code']}"
+    assert data["status_message"] == expected_status_message, f"Status message expected {expected_status_message}, got {data['status_message']}"
+    assert data["success"] == expected_success, f"Success expected {expected_success}, got {data['success']}"
+
+# Test for invalid endpoint (status code: 404 Not Found))
+def test_top_rated_movies_invalid_endpoint():
+    invalid_response = api_get("invalid/endpoint", params, API_TOKEN)
+
+    # validating response status code 
     assert invalid_response.status_code == 404
+
+    # expected values
+    expected_status_code = 34
+    expected_status_message = "The resource you requested could not be found."
+    expected_success = False
+
+    data = invalid_response.json()
+    verify_error_response(data, expected_status_code, expected_status_message, expected_success)
+
+    

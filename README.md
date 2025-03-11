@@ -10,8 +10,8 @@ automation-api/report.html
 #### (if needed) build the container after any change
 docker build -t my-python-api-tests . 
 
-#### To run inside of a Docker container:
-docker run --rm --env-file .env api-tests
+#### To run inside of a Docker container without removing it:
+docker run --env-file .env --name my_test_container my-python-api-tests 
 
 #### Get the report generated from the Docker container run into the project directory
 check for the active containers:

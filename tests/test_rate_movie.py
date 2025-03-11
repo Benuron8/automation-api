@@ -1,27 +1,44 @@
-from src.api_client import APIClient
-from tests.conftest import BASE_URL 
+import pytest
+from src.api_utils import *
+from src.utils import *
+from tests.conftest import API_TOKEN
 
-def test_rate_movie(api_client):
-    movie_id = 2  # Replace with an actual movie ID for your tests
-    rating = 8.0  # Example rating value (can be between 0.0 and 10.0)
+# Parameterized test for successful rating scenario (status code: 201)
+@pytest.mark.parametrize("movie_id, rating", [
+    (2, 8.0),
+    (10, 7.5), 
+    (15, 9.0),
+])
+def test_rate_movie_valid(movie_id, rating):
+    params = {'value': rating}
 
-    params = {
-        'value': rating
-    }
-
-    # Scenario 1: Successful response (Status code 201)
-    response = api_client.post(f"movie/{movie_id}/rating", params)
+    response = api_post(f"movie/{movie_id}/rating", params, API_TOKEN)
     assert response.status_code == 201
+    
     data = response.json()
-    print(data)
-    assert 'status_message' in data, "Response should contain a status message"
 
-    # Scenario 2: Unauthorized Access (Invalid API Key, Status code 401)
-    invalid_client = APIClient(BASE_URL, "invalid_api_key")
-    invalid_response = invalid_client.post(f"movie/{movie_id}/rating", params)
+    expected_success = True
+    expected_success_message = "The item/record was updated successfully."
+
+    assert data["success"] == expected_success, f"Expected {expected_success}, got {data['success']}"
+    assert data["status_message"] == expected_success_message, f"Expected {expected_success_message}, got {data['status_message']}"
+
+# Test for invalid API key (status code: 401)
+def test_rate_movie_invalid_api_key():
+    movie_id = 2
+    rating = 8.0
+
+    params = {'value': rating}
+
+    invalid_response = api_post(f"movie/{movie_id}/rating", params, "invalid_api_key")
     assert invalid_response.status_code == 401
 
-    # Scenario 3: Invalid movie ID (404 Not Found)
+# Test for non-existing movie ID (status code: 404 Not Found))
+def test_rate_movie_non_existing_movie():
     invalid_movie_id = 9999999  # Invalid movie ID
-    invalid_response = api_client.post(f"movie/{invalid_movie_id}/rating", params)
+    rating = 8.0
+
+    params = {'value': rating}
+
+    invalid_response = api_post(f"movie/{invalid_movie_id}/rating", params, API_TOKEN)
     assert invalid_response.status_code == 404
