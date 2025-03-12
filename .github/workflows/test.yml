@@ -27,7 +27,7 @@ jobs:
 
       - name: Run pytest tests
         run: |
-          pytest --maxfail=1 --disable-warnings -q --html=report.html  # Run tests and generate HTML report
+          python -m pytest tests/ --html=report.html  # Run tests and generate HTML report
 
       - name: Upload pytest report as artifact
         if: always()  # Upload even if the tests fail
