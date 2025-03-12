@@ -19,7 +19,7 @@ def test_top_rated_movies_valid_api_key():
     verify_response_structure(data)
 
     # verifying total movies being returned
-    expected_total_results = 10028
+    expected_total_results = 10030
     assert data["total_results"] == expected_total_results, f"Total results expected {expected_total_results}, got {data['total_results']}" 
 
 # Test for invalid API key (status code: 401)

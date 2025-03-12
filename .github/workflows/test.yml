@@ -1,0 +1,37 @@
+name: Python Tests with pytest
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13.2'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Install dependencies from requirements.txt
+
+      - name: Run pytest tests
+        run: |
+          pytest --maxfail=1 --disable-warnings -q --html=report.html  # Run tests and generate HTML report
+
+      - name: Upload pytest report as artifact
+        if: always()  # Upload even if the tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: report.html
