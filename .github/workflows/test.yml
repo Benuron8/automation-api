@@ -26,6 +26,8 @@ jobs:
           pip install -r requirements.txt  # Install dependencies from requirements.txt
 
       - name: Run pytest tests
+        env:
+            API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
           python -m pytest tests/ --html=report.html  # Run tests and generate HTML report
 
